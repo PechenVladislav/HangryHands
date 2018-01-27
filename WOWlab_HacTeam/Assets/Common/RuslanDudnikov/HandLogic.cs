@@ -5,123 +5,213 @@ using UnityEngine.UI;
 
 public enum HandStates { NotREadyToShoot, ReadyToShoot }
 
-public class HandLogic : MonoBehaviour {
+public class HandLogic : MonoBehaviour
+{
 
 
 
+    //
+    // hands
+    // 
+    [SerializeField] GameObject leftHand;
+    [SerializeField] GameObject rightHand;
 
-	[SerializeField] GameObject leftHand;
-	[SerializeField] GameObject rightHand;
-    private SteamVR_Controller.Device controller;
+    //private SteamVR_TrackedObject trackedObj;
 
-	[SerializeField] Text testText1;
-	[SerializeField] Text testText2;
-	[SerializeField] Text testText3;
-	[SerializeField] Text testText4;
+    //private SteamVR_Controller.Device Controller
+    //{
+    //    get { return SteamVR_Controller.Input(14); }
+    //}
+
+
+
+    //
+    // For Tests
+    //
+    [SerializeField] Text testText1;
+    [SerializeField] Text testText2;
+    [SerializeField] Text testText3;
+    [SerializeField] Text testText4;
 
     private GameObject sphere;
-    
 
-	private Vector3 posLeftHand;
-	private Vector3 posRightHand;
 
-	private Vector3 lastPosLeftHand;
-	private float biggerDistance;
+    private Vector3 posLeftHand;
+    private Vector3 posRightHand;
 
-	private float biggerSpeed = 0f;
+    private Vector3 lastPosLeftHand;
+    private float biggerDistance;
 
+    private float biggerSpeed = 0f;
+
+    //
+    // End block for test
+    //
     private bool IsPressed;
+
+    // IsCountingTime Coroutine working ? 
+    private bool IsCountingTime;
 
     public float CurrentSpeed { get; private set; }
 
     public HandStates handState;
 
-	private void Awake()
-	{
-		posLeftHand = leftHand.transform.position;
-		posRightHand = rightHand.transform.position;
-		lastPosLeftHand = Vector3.zero;
+    private void Awake()
+    {
+        // pos of left hand
+        posLeftHand = leftHand.transform.position;
+
+        // pos of right hand
+        posRightHand = rightHand.transform.position;
+
+        // for get speed
+        lastPosLeftHand = posLeftHand;
+
+        // current nand state
         handState = HandStates.NotREadyToShoot;
+
+        //test
         sphere = GameObject.Find("OurSphere");
         sphere.SetActive(false);
-	}
 
-	private void FixedUpdate()
-	{
-        IsPressed = controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger);
+        // current hand
+        //trackedObj = leftHand.GetComponent<SteamVR_TrackedObject>();
+    }
 
-        if(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
-        {
-            StartCoroutine(WaitTimeToShoot());
-        } else {
-            StopCoroutine(WaitTimeToShoot());
-            handState = HandStates.NotREadyToShoot;
-        }
+    //private void FixedUpdate()
+    //{
 
-        if(handState == HandStates.ReadyToShoot && !IsPressed)
-        {
-            Shoot();
-        }
-	}
+    //}
 
     private void Shoot()
     {
         sphere.SetActive(true);
+        Debug.Log("Shoot");
     }
 
-    private IEnumerator WaitTimeToShoot()
+    private IEnumerator CountingTime()
     {
-        var startTime = Time.realtimeSinceStartup;
-        var endTime = startTime + GameManager.Instance.minTimeShoot;
-        while(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && Time.realtimeSinceStartup < endTime)
+        IsCountingTime = true;
+
+        float startingTime = 0f;
+
+        while(true)
         {
-            yield return new WaitForFixedUpdate();
+            startingTime += Time.deltaTime;
+
+            StartCoroutine(Vibrate((GameManager.Instance.minTimeShoot - startingTime) / 2f));
+
+            if(startingTime >= GameManager.Instance.minTimeShoot)
+            {
+                handState = HandStates.ReadyToShoot;
+            }
+            yield return new WaitForEndOfFrame();
         }
-        handState = HandStates.ReadyToShoot;
+    }
+
+    private IEnumerator Vibrate(float waitTime)
+    {
+        if (waitTime <= 0f)
+        {
+            StartCoroutine(VibrateUntilUp());
+        }
+        else
+        {
+            SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(100);
+            yield return new WaitForSecondsRealtime(waitTime);
+            SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(100);
+        }
+    }
+
+    private IEnumerator VibrateUntilUp()
+    {
+        while(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
+        {
+            SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(50);
+            yield return new WaitForEndOfFrame();
+        }
     }
 
 
     private void Update()
     {
+
+
         Tests();
+
+        IsPressed = SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTrigger();
+
+
+        if (IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
+        {
+            if (!IsCountingTime) { StartCoroutine(CountingTime()); }
+        }
+        else
+        {
+            if (IsCountingTime)
+            {
+                StopCoroutine(CountingTime());
+                IsCountingTime = false;
+                handState = HandStates.NotREadyToShoot;
+                testText1.text = "Change at : " + CurrentSpeed + " | " + IsPressed;
+            }
+        }
+
+
+
+
+        if (handState == HandStates.ReadyToShoot)
+        {
+            //Debug.Log("ReadyToShot");
+            if (SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp())
+            {
+                Shoot();
+            }
+            Debug.Log(SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp());
+        }
+
+        //Debug.Log("CurrentState : " + handState);
+
     }
 
 
 
     private void Tests()
-	{
+    {
 
         // text 1
-		posLeftHand = leftHand.transform.position;
-		posRightHand = rightHand.transform.position;
-		var distance = Vector3.Distance (posLeftHand, posRightHand);
-		testText1.text = "Distance btwn hands: " + distance;
+        posLeftHand = leftHand.transform.position;
+        posRightHand = rightHand.transform.position;
+        var distance = Vector3.Distance(posLeftHand, posRightHand);
+        //testText1.text = "Distance btwn hands: " + distance;
 
         //text 2
         testText2.text = "Trigger : " + IsPressed;
 
 
         // text 3
-		float currentDistance = Vector3.Distance (leftHand.transform.position, lastPosLeftHand);
+        float currentDistance = Vector3.Distance(leftHand.transform.position, lastPosLeftHand);
 
-		CurrentSpeed = currentDistance / Time.deltaTime;
-		testText3.text = "current speed : " + CurrentSpeed;
+        CurrentSpeed = currentDistance / Time.deltaTime;
+        testText3.text = "current speed : " + CurrentSpeed;
 
-		lastPosLeftHand = posLeftHand;
+        lastPosLeftHand = posLeftHand;
 
-		if (CurrentSpeed > biggerSpeed) {
-			biggerSpeed = CurrentSpeed;
-			if (biggerSpeed > 100) {
-				biggerSpeed = 0f;
-			}
-		}
+        if (CurrentSpeed > biggerSpeed)
+        {
+            biggerSpeed = CurrentSpeed;
+            if (biggerSpeed > 100)
+            {
+                biggerSpeed = 0f;
+            }
+        }
 
 
         // text 4
-		testText4.text = "bigger speed : " + biggerSpeed;
-	}
+        testText4.text = "bigger speed : " + biggerSpeed;
+    }
 
-    
 
-    
+
+
 }
