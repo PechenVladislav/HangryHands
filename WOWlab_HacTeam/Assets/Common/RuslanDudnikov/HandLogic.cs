@@ -5,55 +5,64 @@ using UnityEngine.UI;
 
 public enum HandStates { NotREadyToShoot, ReadyToShoot }
 
-public class HandLogic : MonoBehaviour {
+public class HandLogic : MonoBehaviour
+{
 
 
 
     //
     // hands
     // 
-	[SerializeField] GameObject leftHand;
-	[SerializeField] GameObject rightHand;
+    [SerializeField] GameObject leftHand;
+    [SerializeField] GameObject rightHand;
 
-    private SteamVR_TrackedObject trackedObj;
+    //private SteamVR_TrackedObject trackedObj;
 
-    private SteamVR_Controller.Device Controller
-    {
-        get { return SteamVR_Controller.Input((int)trackedObj.index); }
-    }
+    //private SteamVR_Controller.Device Controller
+    //{
+    //    get { return SteamVR_Controller.Input(14); }
+    //}
 
 
-	[SerializeField] Text testText1;
-	[SerializeField] Text testText2;
-	[SerializeField] Text testText3;
-	[SerializeField] Text testText4;
+
+    //
+    // For Tests
+    //
+    [SerializeField] Text testText1;
+    [SerializeField] Text testText2;
+    [SerializeField] Text testText3;
+    [SerializeField] Text testText4;
 
     private GameObject sphere;
-    
 
-	private Vector3 posLeftHand;
-	private Vector3 posRightHand;
 
-	private Vector3 lastPosLeftHand;
-	private float biggerDistance;
+    private Vector3 posLeftHand;
+    private Vector3 posRightHand;
 
-	private float biggerSpeed = 0f;
+    private Vector3 lastPosLeftHand;
+    private float biggerDistance;
 
+    private float biggerSpeed = 0f;
+
+    //
+    // End block for test
+    //
     private bool IsPressed;
 
-    private bool IsWaitingToShoot;
+    // IsCountingTime ? 
+    private bool IsCountingTime;
 
     public float CurrentSpeed { get; private set; }
 
     public HandStates handState;
 
-	private void Awake()
-	{
+    private void Awake()
+    {
         // pos of left hand
-		posLeftHand = leftHand.transform.position;
+        posLeftHand = leftHand.transform.position;
 
         // pos of right hand
-		posRightHand = rightHand.transform.position;
+        posRightHand = rightHand.transform.position;
 
         // for get speed
         lastPosLeftHand = posLeftHand;
@@ -66,54 +75,106 @@ public class HandLogic : MonoBehaviour {
         sphere.SetActive(false);
 
         // current hand
-        trackedObj = leftHand.GetComponent<SteamVR_TrackedObject>();
-	}
+        //trackedObj = leftHand.GetComponent<SteamVR_TrackedObject>();
+    }
 
-	private void FixedUpdate()
-	{
-        IsPressed = Controller.GetHairTriggerDown();
+    private void FixedUpdate()
+    {
 
-        if(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && !IsWaitingToShoot)
+        if (SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTrigger())
         {
-            StartCoroutine(WaitTimeToShoot());
-        } else {
-            if (IsWaitingToShoot) { StopCoroutine(WaitTimeToShoot()); }
-            handState = HandStates.NotREadyToShoot;
+            IsPressed = true;
+        }
+        else
+        {
+            IsPressed = false;
+        }
+        //IsPressed = SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerDown ();
+
+        if(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
+        {
+            if (!IsCountingTime) { StartCoroutine(CountingTime()); }
+        } else
+        {
+            if(IsCountingTime)
+            {
+                StopCoroutine(CountingTime());
+                IsCountingTime = false;
+                handState = HandStates.NotREadyToShoot;
+            }
         }
 
-        if(handState == HandStates.ReadyToShoot && !IsPressed)
+        if(handState == HandStates.ReadyToShoot)
         {
-            Shoot();
+            Debug.Log("ReadyToShot");
+            if(SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp())
+            {
+                Shoot();
+            }
         }
-	}
+
+
+        //if (IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && !IsCountingTime)
+        //{
+        //    StartCoroutine(WaitTimeToShoot());
+        //}
+        //else
+        //{
+        //    if (IsCountingTime) { StopCoroutine(WaitTimeToShoot()); }
+        //    handState = HandStates.NotREadyToShoot;
+        //}
+
+        //if (handState == HandStates.ReadyToShoot && !IsPressed)
+        //{
+        //    Shoot();
+        //}
+    }
 
     private void Shoot()
     {
         sphere.SetActive(true);
+        Debug.Log("Shoot");
     }
 
-    private IEnumerator WaitTimeToShoot()
+    private IEnumerator CountingTime()
     {
-        IsWaitingToShoot = true;
-        var startTime = Time.realtimeSinceStartup;
-        var endTime = startTime + GameManager.Instance.minTimeShoot;
-        while(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && Time.realtimeSinceStartup < endTime)
+        float testTime = Time.realtimeSinceStartup;
+        IsCountingTime = true;
+        float startingTime = 0f;
+        while(true)
         {
+            startingTime += Time.deltaTime;
+            if(startingTime >= GameManager.Instance.minTimeShoot)
+            {
+                handState = HandStates.ReadyToShoot;
+                Debug.Log(Time.realtimeSinceStartup - testTime);
+            }
             yield return new WaitForFixedUpdate();
         }
-        handState = HandStates.ReadyToShoot;
-        IsWaitingToShoot = false;
+
+        //IsCountingTime = false;
+
+
+        //IsCountingTime = true;
+        //var startTime = Time.realtimeSinceStartup;
+        //var endTime = startTime + GameManager.Instance.minTimeShoot;
+        //Debug.Log("Start at : " + startTime);
+        //Debug.Log("End at : " + endTime);
+        //while (IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && Time.realtimeSinceStartup < endTime)
+        //{
+        //    Debug.Log("Counting");
+        //    yield return new WaitForFixedUpdate();
+        //}
+        //Debug.Log("Counting end");
+        //handState = HandStates.ReadyToShoot;
+        //IsCountingTime = false;
     }
 
 
     private void Update()
     {
 
-        if (Controller.GetHairTriggerUp())
-        {
-            Debug.Log(gameObject.name + " Trigger Release");
-        }
-
+        //Debug.Log("CurrentState : " + handState);
 
         Tests();
     }
@@ -121,39 +182,41 @@ public class HandLogic : MonoBehaviour {
 
 
     private void Tests()
-	{
+    {
 
         // text 1
-		posLeftHand = leftHand.transform.position;
-		posRightHand = rightHand.transform.position;
-		var distance = Vector3.Distance (posLeftHand, posRightHand);
-		testText1.text = "Distance btwn hands: " + distance;
+        posLeftHand = leftHand.transform.position;
+        posRightHand = rightHand.transform.position;
+        var distance = Vector3.Distance(posLeftHand, posRightHand);
+        testText1.text = "Distance btwn hands: " + distance;
 
         //text 2
         testText2.text = "Trigger : " + IsPressed;
 
 
         // text 3
-		float currentDistance = Vector3.Distance (leftHand.transform.position, lastPosLeftHand);
+        float currentDistance = Vector3.Distance(leftHand.transform.position, lastPosLeftHand);
 
-		CurrentSpeed = currentDistance / Time.deltaTime;
-		testText3.text = "current speed : " + CurrentSpeed;
+        CurrentSpeed = currentDistance / Time.deltaTime;
+        testText3.text = "current speed : " + CurrentSpeed;
 
-		lastPosLeftHand = posLeftHand;
+        lastPosLeftHand = posLeftHand;
 
-		if (CurrentSpeed > biggerSpeed) {
-			biggerSpeed = CurrentSpeed;
-			if (biggerSpeed > 100) {
-				biggerSpeed = 0f;
-			}
-		}
+        if (CurrentSpeed > biggerSpeed)
+        {
+            biggerSpeed = CurrentSpeed;
+            if (biggerSpeed > 100)
+            {
+                biggerSpeed = 0f;
+            }
+        }
 
 
         // text 4
-		testText4.text = "bigger speed : " + biggerSpeed;
-	}
+        testText4.text = "bigger speed : " + biggerSpeed;
+    }
 
-    
 
-    
+
+
 }
