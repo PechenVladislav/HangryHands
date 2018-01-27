@@ -9,10 +9,19 @@ public class HandLogic : MonoBehaviour {
 
 
 
-
+    //
+    // hands
+    // 
 	[SerializeField] GameObject leftHand;
 	[SerializeField] GameObject rightHand;
-    private SteamVR_Controller.Device controller;
+
+    private SteamVR_TrackedObject trackedObj;
+
+    private SteamVR_Controller.Device Controller
+    {
+        get { return SteamVR_Controller.Input((int)trackedObj.index); }
+    }
+
 
 	[SerializeField] Text testText1;
 	[SerializeField] Text testText2;
@@ -32,29 +41,43 @@ public class HandLogic : MonoBehaviour {
 
     private bool IsPressed;
 
+    private bool IsWaitingToShoot;
+
     public float CurrentSpeed { get; private set; }
 
     public HandStates handState;
 
 	private void Awake()
 	{
+        // pos of left hand
 		posLeftHand = leftHand.transform.position;
+
+        // pos of right hand
 		posRightHand = rightHand.transform.position;
-		lastPosLeftHand = Vector3.zero;
+
+        // for get speed
+        lastPosLeftHand = posLeftHand;
+
+        // current nand state
         handState = HandStates.NotREadyToShoot;
+
+        //test
         sphere = GameObject.Find("OurSphere");
         sphere.SetActive(false);
+
+        // current hand
+        trackedObj = leftHand.GetComponent<SteamVR_TrackedObject>();
 	}
 
 	private void FixedUpdate()
 	{
-        IsPressed = controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger);
+        IsPressed = Controller.GetHairTriggerDown();
 
-        if(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
+        if(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && !IsWaitingToShoot)
         {
             StartCoroutine(WaitTimeToShoot());
         } else {
-            StopCoroutine(WaitTimeToShoot());
+            if (IsWaitingToShoot) { StopCoroutine(WaitTimeToShoot()); }
             handState = HandStates.NotREadyToShoot;
         }
 
@@ -71,6 +94,7 @@ public class HandLogic : MonoBehaviour {
 
     private IEnumerator WaitTimeToShoot()
     {
+        IsWaitingToShoot = true;
         var startTime = Time.realtimeSinceStartup;
         var endTime = startTime + GameManager.Instance.minTimeShoot;
         while(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed && Time.realtimeSinceStartup < endTime)
@@ -78,11 +102,19 @@ public class HandLogic : MonoBehaviour {
             yield return new WaitForFixedUpdate();
         }
         handState = HandStates.ReadyToShoot;
+        IsWaitingToShoot = false;
     }
 
 
     private void Update()
     {
+
+        if (Controller.GetHairTriggerUp())
+        {
+            Debug.Log(gameObject.name + " Trigger Release");
+        }
+
+
         Tests();
     }
 
