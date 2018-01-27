@@ -194,8 +194,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51eadf021f568584ca523fec69b7c64e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Target: {fileID: 1934408895}
-  Axis: {x: 0, y: 0, z: 0}
 --- !u!1001 &446130899
 Prefab:
   m_ObjectHideFlags: 0
@@ -1022,6 +1020,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Target: {fileID: 1600088418}
+--- !u!1 &700252131 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1635919366354262, guid: 22ae8ee6650f5ba48afb32879dc48095,
+    type: 2}
+  m_PrefabInternal: {fileID: 446130899}
+--- !u!54 &700252133 stripped
+Rigidbody:
+  m_PrefabParentObject: {fileID: 54147467226009388, guid: 22ae8ee6650f5ba48afb32879dc48095,
+    type: 2}
+  m_PrefabInternal: {fileID: 446130899}
+--- !u!114 &700252134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 700252131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0766d7212850a14793255262185af9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ControllerTransform: {fileID: 0}
+  HandLogic: {fileID: 0}
+  Rigidbody: {fileID: 700252133}
+  Speed: 1
+  snapFoodPoint: {fileID: 964745026}
+  handPositionOnController: {fileID: 0}
 --- !u!1 &893354027 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 1406262647846316, guid: 22ae8ee6650f5ba48afb32879dc48095,
@@ -1039,6 +1064,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Target: {fileID: 492039382}
+--- !u!1 &964745025
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 964745026}
+  m_Layer: 0
+  m_Name: SnapFood
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &964745026
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 964745025}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1934408895}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1600088417 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 1422059251378492, guid: 22ae8ee6650f5ba48afb32879dc48095,

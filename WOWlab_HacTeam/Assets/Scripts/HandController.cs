@@ -24,6 +24,7 @@ public class HandController : MonoBehaviour
     void Start()
     {
         throwHand = false;
+        MoveBack = false;
     }
 
     // Update is called once per frame
@@ -35,6 +36,7 @@ public class HandController : MonoBehaviour
         }
         else if (MoveBack)
         {
+            MoveBack = false;
             StartCoroutine(MoveBackCoroutine());
         }
     }
@@ -45,7 +47,7 @@ public class HandController : MonoBehaviour
     {
         Vector3 startPos = transform.position;
         float dist = (transform.position - ControllerTransform.position).magnitude;
-        float speed = 1;
+        float speed = 4;
         float t = 0f;
         while (t <= 1f)
         {
@@ -54,7 +56,7 @@ public class HandController : MonoBehaviour
             yield return null;
         }
 
-        //transform.position
+        transform.position = handPositionOnController.position;
     }
 
 
@@ -72,11 +74,5 @@ public class HandController : MonoBehaviour
         //    throwHand = false;
         //    yield return null;
         //}
-    }
-
-
-    private void Return()
-    {
-        MoveBack = true;
     }
 }
