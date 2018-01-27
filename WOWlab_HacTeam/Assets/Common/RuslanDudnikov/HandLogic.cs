@@ -3,53 +3,74 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class HandLogic : MonoBehaviour {
 
-    [SerializeField] private float speedToShoot = 1.0f;
 
-    [SerializeField] Text testText1;
-    [SerializeField] Text testText2;
+	[SerializeField] GameObject leftHand;
+	[SerializeField] GameObject rightHand;
 
-    public float CurrentSpeedOfHandByVector { get; private set; }
-    public float CurrentSpeedOfHandByVelocity { get; private set; }
+	[SerializeField] Text testText1;
+	[SerializeField] Text testText2;
+	[SerializeField] Text testText3;
+	[SerializeField] Text testText4;
 
-    private Vector3 currentPosition;
-    private Vector3 lastPosition;
+	private Vector3 posLeftHand;
+	private Vector3 posRightHand;
 
-    private Rigidbody rb;
+	private Vector3 lastPosLeftHand;
+	private float biggerDistance;
 
-    private void Awake()
-    {
-        rb = GetComponent<Rigidbody>();
-        currentPosition = gameObject.transform.position;
-        lastPosition = gameObject.transform.position;
-    }
+	private float biggerSpeed = 0f;
 
-    private void FixedUpdate()
-    {
-        currentPosition = gameObject.transform.position;
-        CurrentSpeedOfHandByVector = GetControllerSpeedByVector();
-        CurrentSpeedOfHandByVelocity = GetControllerSpeedByVelocity();
-    }
+	private void Awake()
+	{
+		posLeftHand = leftHand.transform.position;
+		posRightHand = rightHand.transform.position;
+		lastPosLeftHand = Vector3.zero;
+	}
 
-    private void LateUpdate()
-    {
-        lastPosition = gameObject.transform.position;
-    }
+	private void FixedUpdate()
+	{
 
-    private float GetControllerSpeedByVector()
-    {
-        return Vector3.Distance(lastPosition, currentPosition) / Time.deltaTime;
-    }
 
-    private float GetControllerSpeedByVelocity()
-    {
-        return rb.velocity.magnitude;
-    }
 
-    private void Update()
-    {
-        testText1.text = "Speed by Vector3 : " + CurrentSpeedOfHandByVector;
-        testText2.text = "Speed by velosity : " + CurrentSpeedOfHandByVelocity;
-    }
+			
+	}
+
+
+	private void Tests()
+	{
+		posLeftHand = leftHand.transform.position;
+		posRightHand = rightHand.transform.position;
+		var distance = Vector3.Distance (posLeftHand, posRightHand);
+		testText1.text = "Distance btwn hands: " + distance;
+
+
+		float currentDistance = Vector3.Distance (leftHand.transform.position, lastPosLeftHand);
+		if (currentDistance > biggerDistance) {
+			biggerDistance = currentDistance;
+		}
+		testText2.text = "bigger : " + biggerDistance;
+
+		var currentSpeed = currentDistance / Time.deltaTime;
+		testText3.text = "current speed : " + currentSpeed;
+
+		lastPosLeftHand = posLeftHand;
+
+
+
+		if (currentSpeed > biggerSpeed) {
+			biggerSpeed = currentSpeed;
+			if (biggerSpeed > 100) {
+				biggerSpeed = 0f;
+			}
+		}
+
+		testText4.text = "bigger speed : " + biggerSpeed;
+	}
+
+    
+
+    
 }
