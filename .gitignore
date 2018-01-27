@@ -34,3 +34,7 @@ sysinfo.txt
 *.unitypackage
 Library
 obj
+UnityPackageManager
+ProjectSettings
+Temp
+Library
