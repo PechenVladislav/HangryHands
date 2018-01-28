@@ -27,4 +27,9 @@ public class GameManager : MonoBehaviour {
         DontDestroyOnLoad(gameObject);
     }
 
+    private void Start()
+    {
+        AudioManager.Instance.PlayBackgroundMusic(AudioManager.Instance.MusicBackground);
+    }
+
 }
