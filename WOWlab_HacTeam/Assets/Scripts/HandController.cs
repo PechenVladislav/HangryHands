@@ -10,15 +10,21 @@ public class HandController : MonoBehaviour
     [SerializeField]
     HandLogic HandLogic;
     [SerializeField]
-    Rigidbody Rigidbody;
+    Animator Anim;
     [SerializeField]
     float Speed;
+	[Space(22)]
     [SerializeField]
     Transform snapFoodPoint;
     [SerializeField]
     Transform handPositionOnController;
 	[SerializeField]
 	float maxDistance;
+	[SerializeField]
+	float SpehereRadius = 0.3f;
+	[SerializeField]
+	public GameObject ActualHand;
+
 
     public bool MoveBack { get; private set; }
 
@@ -51,43 +57,71 @@ public class HandController : MonoBehaviour
     bool throwHand;
 
 
-	void Update()
-	{
-		if (SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTriggerUp ())
-			Thorw ();
-	}
-
-
     IEnumerator MoveBackCoroutine()
     {
+		throwHand = false;
+		Physics.gravity = new Vector3 (0, -1, 0);
         Vector3 startPos = transform.position;
         float dist = (transform.position - ControllerTransform.position).magnitude;
+		float t = 0f;
         float speed = 10;
-        float t = 0f;
         while (t <= 1f)
         {
             t += Time.deltaTime / dist * speed;
             transform.position = Vector3.Lerp(startPos, ControllerTransform.position, t);
             yield return null;
         }
-		throwHand = false;
         transform.position = handPositionOnController.position;
 		transform.parent = handPositionOnController.transform.parent;
     }
 
 
+	void Update()
+	{
+		if (SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTriggerDown () && throwHand)
+		{
+			print (1232321323);
+			Collider[] colliders = Physics.OverlapSphere (transform.position, SpehereRadius);
+			foreach (var col in colliders) {
+				Grabbing banana = col.GetComponent<Grabbing> ();
+				if (banana != null) {
+					bananaLoc = banana;
+
+					banana.Catch (this);
+					bananaInHand = true;
+					break;
+				}
+			}
+
+			MoveBack = true;
+		}
+	}
+	bool bananaInHand;
+	Grabbing bananaLoc;
+
+
     public void Thorw()
     {
-        throwHand = true;
+		if (!bananaInHand) {
+			Physics.gravity = new Vector3 (0, 3, 0);
+			throwHand = true;
+		}
     }
 
-    public void OnTriggerStay(Collider other)
-    {
-		if (other.GetComponent<Grabbing>() && SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTriggerDown ())
-        {
-			other.GetComponent<Grabbing>().Catch(snapFoodPoint);
-            MoveBack = true;
-            throwHand = false;
-        }
-    }
+
+	void OnTriggerEnter(Collider col)
+	{
+		if (col.gameObject.tag == "Head" && bananaInHand && bananaLoc != null) {
+			bananaInHand = false;
+			Anim.SetBool ("TakeBanana", bananaInHand);
+			bananaLoc.Ate ();
+		}
+	}
+		
+
+	public void AnimationGrab(bool grab)
+	{
+		Anim.SetBool ("TakeBanana", grab);
+	}
+
 }

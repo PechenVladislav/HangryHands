@@ -6,16 +6,23 @@ using UnityEngine;
 
 public class Grabbing : MonoBehaviour
 {
-
-    public GameObject Banana;
-
-    public void Catch(Transform newParent)
+	[SerializeField]
+	Collider col;
+    public void Catch(HandController newParent)
     //public void OnTriggerStay(Collider other)
     {
-        Banana.transform.SetParent(newParent);
+		transform.SetParent(newParent.ActualHand.transform);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+		newParent.AnimationGrab (true);
     }
+
+	public void Ate()
+	{
+		gameObject.SetActive (false);
+		col.enabled = false;
+	}
+
 }
 
 

@@ -15,6 +15,7 @@ public class HandLogic : MonoBehaviour
     // 
     [SerializeField] GameObject leftHand;
     [SerializeField] GameObject rightHand;
+	[SerializeField] HandController handController;
 
     //private SteamVR_TrackedObject trackedObj;
 
@@ -28,6 +29,7 @@ public class HandLogic : MonoBehaviour
     //
     // For Tests
     //
+	[Space(30)]
     [SerializeField] Text testText1;
     [SerializeField] Text testText2;
     [SerializeField] Text testText3;
@@ -39,7 +41,7 @@ public class HandLogic : MonoBehaviour
     private Vector3 posLeftHand;
     private Vector3 posRightHand;
 
-    private Vector3 lastPosLeftHand;
+    private Vector3 lastPosRightHand;
     private float biggerDistance;
 
     private float biggerSpeed = 0f;
@@ -65,7 +67,7 @@ public class HandLogic : MonoBehaviour
         posRightHand = rightHand.transform.position;
 
         // for get speed
-        lastPosLeftHand = posLeftHand;
+		lastPosRightHand = posRightHand;
 
         // current nand state
         handState = HandStates.NotREadyToShoot;
@@ -85,8 +87,7 @@ public class HandLogic : MonoBehaviour
 
     private void Shoot()
     {
-		sphere.SetActive(!sphere.activeSelf);
-        Debug.Log("Shoot");
+		handController.Thorw ();
     }
 
     //private IEnumerator CountingTime()
@@ -141,7 +142,7 @@ public class HandLogic : MonoBehaviour
         }
         ushort casted = (ushort) (currentTimeTrigger * 500f);
 		testText1.text = casted.ToString();
-		SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(casted);
+		SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost)).TriggerHapticPulse(casted);
     }
 
 
@@ -171,12 +172,12 @@ public class HandLogic : MonoBehaviour
 		// --------------------------------------
 
 
-		if (SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp ()) {
+		if (SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTriggerUp ()) {
 			if (handState == HandStates.ReadyToShoot) {
 				Shoot ();
 			}
 		}
-		IsPressed = SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTrigger ();
+		IsPressed = SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTrigger ();
 	}
 	Coroutine ReadyCoroutine;
 
@@ -248,12 +249,12 @@ public class HandLogic : MonoBehaviour
 
 
         // text 3
-        float currentDistance = Vector3.Distance(leftHand.transform.position, lastPosLeftHand);
+        float currentDistance = Vector3.Distance(rightHand.transform.position, lastPosRightHand);
 
         CurrentSpeed = currentDistance / Time.deltaTime;
         testText3.text = "current speed : " + CurrentSpeed;
 
-        lastPosLeftHand = posLeftHand;
+        lastPosRightHand = posLeftHand;
 
         if (CurrentSpeed > biggerSpeed)
         {
