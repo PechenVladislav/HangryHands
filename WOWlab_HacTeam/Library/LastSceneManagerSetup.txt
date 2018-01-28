@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Common/RuslanDudnikov/RuslansMainScene.unity
+- path: Assets/PreFinal_Art.unity
   isLoaded: 1
   isActive: 1

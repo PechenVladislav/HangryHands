@@ -13,21 +13,11 @@ public class AudioManager : MonoBehaviour
 
     // -------------Soudns---------------
 
-    public AudioClip TransmissionSoundTrack;
-    public AudioClip MenuMusicTransmission;
-    public AudioClip AmbienceBirds;
-    public AudioClip AmbienceMuted;
-    public AudioClip ArmsMovement;
-    public AudioClip ArmsMovementLong;
-    public AudioClip BonesMovement;
+    public AudioClip MusicBackground;
     public AudioClip CatchBanan;
-    public AudioClip CathingBanan;
     public AudioClip EatingBanan;
     public AudioClip Fail;
     public AudioClip HandTwist;
-    public AudioClip StepsFast;
-    public AudioClip StepsSlow;
-    public AudioClip ThisIsTheFuckingEnd;
 
 
     // ----------------------------------
