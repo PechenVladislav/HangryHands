@@ -17,6 +17,8 @@ public class HandController : MonoBehaviour
     Transform snapFoodPoint;
     [SerializeField]
     Transform handPositionOnController;
+	[SerializeField]
+	float maxDistance;
 
     public bool MoveBack { get; private set; }
 
@@ -32,7 +34,13 @@ public class HandController : MonoBehaviour
     {
         if (throwHand)
         {
-            Rigidbody.velocity = ControllerTransform.up * Speed;
+			if (transform.parent != null)
+				transform.parent = null;
+			transform.position += transform.forward * Speed * Time.deltaTime;
+			transform.forward = ControllerTransform.forward;
+
+			if ((transform.position - ControllerTransform.position).magnitude > maxDistance)
+				StartCoroutine(MoveBackCoroutine());
         }
         else if (MoveBack)
         {
@@ -43,11 +51,18 @@ public class HandController : MonoBehaviour
     bool throwHand;
 
 
+	void Update()
+	{
+		if (SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTriggerUp ())
+			Thorw ();
+	}
+
+
     IEnumerator MoveBackCoroutine()
     {
         Vector3 startPos = transform.position;
         float dist = (transform.position - ControllerTransform.position).magnitude;
-        float speed = 4;
+        float speed = 10;
         float t = 0f;
         while (t <= 1f)
         {
@@ -55,8 +70,9 @@ public class HandController : MonoBehaviour
             transform.position = Vector3.Lerp(startPos, ControllerTransform.position, t);
             yield return null;
         }
-
+		throwHand = false;
         transform.position = handPositionOnController.position;
+		transform.parent = handPositionOnController.transform.parent;
     }
 
 
@@ -65,14 +81,13 @@ public class HandController : MonoBehaviour
         throwHand = true;
     }
 
-    private void OnTriggerStay(Collider other)
+    public void OnTriggerStay(Collider other)
     {
-        //if (other.GetComponent<Grabbing>())//&& HandLogic.Squeeze
-        //{
-        //    Grabbing food = other.GetComponent<Grabbing>().Catch(snapPoint);
-        //    MoveBack = true;
-        //    throwHand = false;
-        //    yield return null;
-        //}
+		if (other.GetComponent<Grabbing>() && SteamVR_Controller.Input (SteamVR_Controller.GetDeviceIndex (SteamVR_Controller.DeviceRelation.Rightmost)).GetHairTriggerDown ())
+        {
+			other.GetComponent<Grabbing>().Catch(snapFoodPoint);
+            MoveBack = true;
+            throwHand = false;
+        }
     }
 }
