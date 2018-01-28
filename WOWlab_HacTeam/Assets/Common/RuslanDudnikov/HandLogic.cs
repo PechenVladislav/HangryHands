@@ -89,49 +89,63 @@ public class HandLogic : MonoBehaviour
         Debug.Log("Shoot");
     }
 
-    private IEnumerator CountingTime()
+    //private IEnumerator CountingTime()
+    //{
+    //    IsCountingTime = true;
+
+    //    float startingTime = 0f;
+
+    //    while(true)
+    //    {
+    //        startingTime += Time.deltaTime;
+
+    //        StartCoroutine(Vibrate((GameManager.Instance.minTimeShoot - startingTime) / 2f));
+
+    //        if(startingTime >= GameManager.Instance.minTimeShoot)
+    //        {
+    //            handState = HandStates.ReadyToShoot;
+    //        }
+    //        yield return new WaitForEndOfFrame();
+    //    }
+    //}
+
+    //private IEnumerator Vibrate(float waitTime)
+    //{
+    //    if (waitTime <= 0f)
+    //    {
+    //        StartCoroutine(VibrateUntilUp());
+    //    }
+    //    else
+    //    {
+    //        SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(100);
+    //        yield return new WaitForSecondsRealtime(waitTime);
+    //        SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(100);
+    //    }
+    //}
+
+    //private IEnumerator VibrateUntilUp()
+    //{
+    //    while(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
+    //    {
+    //        SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(50);
+    //        yield return new WaitForEndOfFrame();
+    //    }
+    //}
+
+
+    private void VibrateHand(float currentTimeTrigger)
     {
-        IsCountingTime = true;
-
-        float startingTime = 0f;
-
-        while(true)
+        if(currentTimeTrigger >= GameManager.Instance.minTimeShoot)
         {
-            startingTime += Time.deltaTime;
-
-            StartCoroutine(Vibrate((GameManager.Instance.minTimeShoot - startingTime) / 2f));
-
-            if(startingTime >= GameManager.Instance.minTimeShoot)
-            {
-                handState = HandStates.ReadyToShoot;
-            }
-            yield return new WaitForEndOfFrame();
+            currentTimeTrigger = GameManager.Instance.minTimeShoot;
         }
+        ushort casted = (ushort) (currentTimeTrigger * 100f);
+
+        SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(casted);
     }
 
-    private IEnumerator Vibrate(float waitTime)
-    {
-        if (waitTime <= 0f)
-        {
-            StartCoroutine(VibrateUntilUp());
-        }
-        else
-        {
-            SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(100);
-            yield return new WaitForSecondsRealtime(waitTime);
-            SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(100);
-        }
-    }
 
-    private IEnumerator VibrateUntilUp()
-    {
-        while(IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
-        {
-            SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).TriggerHapticPulse(50);
-            yield return new WaitForEndOfFrame();
-        }
-    }
-
+    float timeCount;
 
     private void Update()
     {
@@ -141,34 +155,65 @@ public class HandLogic : MonoBehaviour
 
         IsPressed = SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTrigger();
 
+        // --------------------------------------
 
         if (IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
         {
-            if (!IsCountingTime) { StartCoroutine(CountingTime()); }
-        }
-        else
-        {
-            if (IsCountingTime)
+            timeCount += Time.deltaTime;
+
+            if (timeCount >= GameManager.Instance.minTimeShoot)
             {
-                StopCoroutine(CountingTime());
-                IsCountingTime = false;
-                handState = HandStates.NotREadyToShoot;
-                testText1.text = "Change at : " + CurrentSpeed + " | " + IsPressed;
+                handState = HandStates.ReadyToShoot;
             }
+            else { handState = HandStates.NotREadyToShoot; }
         }
+        else { timeCount = 0f; handState = HandStates.NotREadyToShoot; }
+
+        // --------------------------------------
 
 
-
-
-        if (handState == HandStates.ReadyToShoot)
+        if(SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp())
         {
-            //Debug.Log("ReadyToShot");
-            if (SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp())
+            if(handState == HandStates.ReadyToShoot)
             {
                 Shoot();
             }
-            Debug.Log(SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp());
         }
+
+
+
+
+
+        // --------------------------------------
+
+
+        //if (IsPressed && CurrentSpeed >= GameManager.Instance.minSpeed)
+        //{
+        //    if (!IsCountingTime) { StartCoroutine(CountingTime()); }
+        //}
+        //else
+        //{
+        //    if (IsCountingTime)
+        //    {
+        //        StopCoroutine(CountingTime());
+        //        IsCountingTime = false;
+        //        handState = HandStates.NotREadyToShoot;
+        //        testText1.text = "Change at : " + CurrentSpeed + " | " + IsPressed;
+        //    }
+        //}
+
+
+
+
+        //if (handState == HandStates.ReadyToShoot)
+        //{
+        //    //Debug.Log("ReadyToShot");
+        //    if (SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp())
+        //    {
+        //        Shoot();
+        //    }
+        //    Debug.Log(SteamVR_Controller.Input(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost)).GetHairTriggerUp());
+        //}
 
         //Debug.Log("CurrentState : " + handState);
 
@@ -208,7 +253,7 @@ public class HandLogic : MonoBehaviour
 
 
         // text 4
-        testText4.text = "bigger speed : " + biggerSpeed;
+        testText4.text = "currentState : " + handState;
     }
 
 
