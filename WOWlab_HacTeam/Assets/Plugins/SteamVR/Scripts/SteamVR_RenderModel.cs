@@ -56,8 +56,8 @@ public class SteamVR_RenderModel : MonoBehaviour
 	{
 		public RenderModel(Mesh mesh, Material material)
 		{
-			this.mesh = mesh;
-			this.material = material;
+			//this.mesh = mesh;
+			//this.material = material;
 		}
 		public Mesh mesh { get; private set; }
 		public Material material { get; private set; }
