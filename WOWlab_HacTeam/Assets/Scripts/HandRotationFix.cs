@@ -7,7 +7,8 @@ public class HandRotationFix : MonoBehaviour {
     [SerializeField]
     Transform Target;
 
-    private void Update()
+
+    private void LateUpdate()
     {
         transform.rotation = Target.rotation;
     }

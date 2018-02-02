@@ -2,3 +2,6 @@ sceneSetups:
 - path: Assets/PreFinal_Art.unity
   isLoaded: 1
   isActive: 1
+- path: Assets/Common/RuslanDudnikov/vLADMainScene.unity
+  isLoaded: 1
+  isActive: 0
